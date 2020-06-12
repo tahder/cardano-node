@@ -78,6 +78,7 @@ data TextViewError
   = TextViewFormatError !Text
   | TextViewTypeError   ![TextViewType] !TextViewType -- ^ expected, actual
   | TextViewDecodeError !DecoderError
+  | TextViewMiscErr !Text
   deriving (Eq, Show)
 
 -- | Parse a 'TextView' from the external serialised format.
@@ -176,12 +177,15 @@ renderTextViewFileError tvfe =
           [ Text.decodeLatin1 (unTextViewType expType) | expType <- expTypes ]
      <> " Actual: " <> (Text.decodeLatin1 (unTextViewType actType))
 
+    TextViewFileError fp (TextViewMiscErr err) ->
+         "TextView type error at: " <> toS fp
+      <> " Error: " <> err
+
     TextViewFileError fp (TextViewDecodeError decErr)->
       "TextView file error at: " <> toS fp <> " Error: " <> textShow decErr
 
     TextViewFileIOError fp ioExcpt ->
       "TextView IO exception at: " <> toS fp <> " Error: " <> textShow ioExcpt
-
 -- | Read a file in the external serialised format for 'TextView'.
 --
 readTextViewFile :: FilePath -> IO (Either TextViewFileError TextView)
